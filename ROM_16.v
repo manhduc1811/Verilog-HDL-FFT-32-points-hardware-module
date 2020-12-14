@@ -1,25 +1,29 @@
 module ROM_16(
-input clk,
-input in_valid,
-input rst_n,
-output reg [23:0] w_r,
-output reg [23:0] w_i,
-output reg[1:0] state
+	input 			  clk,
+	input 			  in_valid,
+	input 			  rst_n,
+	output reg [23:0] w_r,
+	output reg [23:0] w_i,
+	output reg [1:0]  state
 );
-
-reg valid,next_valid;
-reg [5:0] count,next_count;
+////////////////////////////////////////////
+// Internal signals
+reg                   valid, next_valid;
+reg [5:0]             count, next_count;
+////////////////////////////////////////////
+// Next state logic
 always @(*) begin
-    if(in_valid || valid)next_count = count + 1;
-    else next_count = count;
-    
+    if(in_valid || valid)
+		next_count = count + 1;
+    else 
+		next_count = count;
     if (count<6'd16) 
-        state = 2'd0;
+        state      = 2'd0;
     else if (count >= 6'd16 && count < 6'd32)
-        state = 2'd1;
+        state      = 2'd1;
     else if (count >= 6'd32 && count < 6'd48)
-        state = 2'd2;
-    else state = 2'd3;
+        state      = 2'd2;
+    else state     = 2'd3;
     case(count)
     6'd32: begin
         w_r = 24'b 00000000_00000001_00000000;
@@ -108,14 +112,14 @@ always @(*) begin
         end
     endcase
 end
-
-always@(posedge clk or negedge rst_n)begin
+////////////////////////////////////////////
+// State register
+always@(posedge clk or negedge rst_n) begin
     if(~rst_n)begin
         count <= 0;
         valid <= 0;
     end
-    else if(in_valid)
-    begin
+    else if(in_valid) begin
         count <= next_count;
         valid <= in_valid;
     end

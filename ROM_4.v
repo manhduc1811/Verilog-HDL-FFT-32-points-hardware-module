@@ -1,35 +1,34 @@
 module ROM_4(
-input clk,
-input in_valid,
-input rst_n,
-output reg [23:0] w_r,
-output reg [23:0] w_i,
-output reg[1:0] state
+	input 			  clk,
+	input             in_valid,
+	input             rst_n,
+	output reg [23:0] w_r,
+	output reg [23:0] w_i,
+	output reg [1:0]  state
 );
-
-reg valid;
-reg [5:0] count,next_count;
-reg [2:0] s_count,next_s_count;
-
+////////////////////////////////////////////
+// Internal signals
+reg [5:0]             count, next_count;
+reg [2:0]             s_count, next_s_count;
+////////////////////////////////////////////
+// Next state logic
 always @(*) begin
-    if(in_valid || valid)
-    begin 
-        next_count = count + 1;
+    if(in_valid) begin 
+        next_count   = count + 1;
         next_s_count = s_count;
     end
     else begin
-        next_count = count;
+        next_count   = count;
         next_s_count = s_count;  
     end
-
     if (count<6'd4) 
-        state = 2'd0;
+        state        = 2'd0;
     else if (count >= 6'd4 && s_count < 3'd4)begin
-        state = 2'd1;
+        state        = 2'd1;
         next_s_count = s_count + 1;
     end
     else if (count >= 6'd4 && s_count >= 3'd4)begin
-        state = 2'd2;
+        state        = 2'd2;
         next_s_count = s_count + 1;
     end
     case(s_count)
@@ -55,14 +54,15 @@ always @(*) begin
         end
     endcase
 end
-
+////////////////////////////////////////////
+// State register
 always@(posedge clk or negedge rst_n)begin
     if(~rst_n)begin
-        count <= 0;
+        count   <= 0;
         s_count <= 0;
     end
     else begin
-        count <= next_count;
+        count   <= next_count;
         s_count <= next_s_count;
     end
 end
